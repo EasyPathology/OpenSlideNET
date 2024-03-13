@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET", "OpenSlideNET\OpenSlideNET.csproj", "{93F26966-FF6D-4953-B730-7B9C21CCB4FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Debug|Any CPU.Build.0 = Debug|x64
+		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Release|Any CPU.ActiveCfg = Release|x64
+		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Release|Any CPU.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
