@@ -15,6 +15,6 @@ namespace OpenSlideNET.Interop
         /// </summary>
         /// <param name="osr">The OpenSlide object. </param>
         /// <returns>A string describing the original error that caused the problem, or NULL if no error has occurred. </returns>
-        public static string GetError(OpenSlideImageSafeHandle osr) => StringFromNativeUtf8(GetErrorInternal(osr))!;
+        public static string? GetError(OpenSlideImageSafeHandle osr) => StringFromNativeUtf8(GetErrorInternal(osr));
     }
 }

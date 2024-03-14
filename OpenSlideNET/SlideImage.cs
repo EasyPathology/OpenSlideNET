@@ -73,14 +73,13 @@ public interface ISlideImage : IDisposable {
 	
 	double GetLevelDownsample(int level);
 	IReadOnlyList<string> GetAllPropertyNames();
-	bool TryGetProperty(string name, out string value);
+	bool TryGetProperty(string name, [NotNullWhen(true)] out string? value);
 	void ReadRegion(int level, long x, long y, long width, long height, IntPtr buffer);
 }
 
-public static class SlideImage {
-	public static HashSet<string> SupportedExtensions { get; } = new() {
-		".ndpi", ".svs", ".tiff", ".mrxs"
-	};
+public static class SlideImage
+{
+	public static HashSet<string> SupportedExtensions { get; } = [".ndpi", ".svs", ".tiff", ".mrxs"];
 
 	/// <summary>
 	/// Open a whole slide image.
@@ -90,7 +89,7 @@ public static class SlideImage {
 	/// <returns>The <see cref="OpenSlideImage"/> object.</returns>
 	/// <exception cref="OpenSlideUnsupportedFormatException">The file format can not be recognized.</exception>
 	/// <exception cref="OpenSlideException">The file format is recognized, but an error occurred when opening the file.</exception>
-	public static ISlideImage Open([NotNull] string slidePath) {
+	public static ISlideImage Open(string slidePath) {
 		if (slidePath == null) {
 			throw new ArgumentNullException(nameof(slidePath));
 		}
@@ -105,33 +104,39 @@ public static class SlideImage {
 			throw new OpenSlideUnsupportedFormatException();
 		}
 
-		if (!ThrowHelper.TryCheckError(handle, out var errMsg)) {
-			handle.Dispose();
-			throw new OpenSlideException(errMsg);
-		}
-		return new OpenSlideImage(slidePath, handle);
+		if (ThrowHelper.TryCheckError(handle, out var errMsg)) return new OpenSlideImage(slidePath, handle);
+		handle.Dispose();
+		throw new OpenSlideException(errMsg);
 	}
 
-	public static bool TryReadQuickHash(string slidePath, [NotNullWhen(true)] out string quickHash, [NotNullWhen(false)] out Exception exception) {
-		try {
-			if (slidePath.EndsWith(".mds")) {
+	public static bool TryReadQuickHash(string slidePath,
+		[NotNullWhen(true)] out string? quickHash,
+		[NotNullWhen(false)] out Exception? exception)
+	{
+		try
+		{
+			if (slidePath.EndsWith(".mds"))
+			{
 				quickHash = SlideHash.GetHash(slidePath);
 				exception = null;
 				return true;
 			}
 
 			using var handle = OpenSlideInterop.Open(slidePath);
-			if (handle.IsInvalid) {
+			if (handle.IsInvalid)
+			{
 				quickHash = null;
 				exception = new FileLoadException(slidePath);
 				return false;
 			}
 
-			quickHash = OpenSlideInterop.GetPropertyValue(handle, OpenSlideInterop.OpenSlidePropertyNameQuickHash1);
+			quickHash =   OpenSlideInterop.GetPropertyValue(handle, OpenSlideInterop.OpenSlidePropertyNameQuickHash1);
 			quickHash ??= SlideHash.GetHash(slidePath);
-			exception = null;
+			exception =   null;
 			return true;
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			quickHash = null;
 			exception = e;
 			return false;
