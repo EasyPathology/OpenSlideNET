@@ -50,8 +50,7 @@ namespace OpenSlideNET.Interop {
 		/// </summary>
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <returns>The number of levels, or -1 if an error occurred. </returns>
-		public static int GetLevelCount(OpenSlideImageSafeHandle osr)
-			=> GetLevelCountInternal(osr);
+		public static int GetLevelCount(OpenSlideImageSafeHandle osr) => GetLevelCountInternal(osr);
 
 
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_get_level0_dimensions", CallingConvention = CallingConvention.Cdecl)]

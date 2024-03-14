@@ -15,9 +15,9 @@ namespace OpenSlideNET.Interop {
 		/// <returns>A NULL-terminated string array of associated image names, or an empty array if an error occurred. </returns>
 		public static unsafe string[] GetAssociatedImageNames(OpenSlideImageSafeHandle osr) {
 			var list = new List<string>();
-			IntPtr* pCurrent = (IntPtr*)GetAssociatedImageNames_Internal(osr);
+			var pCurrent = (IntPtr*)GetAssociatedImageNames_Internal(osr);
 			while (*pCurrent != IntPtr.Zero) {
-				string name = StringFromNativeUtf8(*pCurrent);
+				var name = StringFromNativeUtf8(*pCurrent);
 				list.Add(name);
 				pCurrent++;
 			}

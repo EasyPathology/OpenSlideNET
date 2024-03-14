@@ -6,11 +6,11 @@ namespace OpenSlideNET.Interop
 {
     public static partial class OpenSlideInterop
     {
-        internal static unsafe string StringFromNativeUtf8(IntPtr nativeUtf8)
+        internal static unsafe string? StringFromNativeUtf8(IntPtr nativeUtf8)
         {
             if (nativeUtf8 == IntPtr.Zero)
                 return null;
-            int len = 0;
+            var len = 0;
             while (*(byte*)(nativeUtf8 + len) != 0)
                 ++len;
             return Encoding.UTF8.GetString((byte*)nativeUtf8, len);
@@ -29,7 +29,7 @@ namespace OpenSlideNET.Interop
                 _handle = default;
             }
 
-            public unsafe IntPtr Encode(string value)
+            public unsafe IntPtr Encode(string? value)
             {
                 if (value is null)
                 {
@@ -42,8 +42,8 @@ namespace OpenSlideNET.Interop
                     _handle = default;
                 }
 
-                IntPtr pointer = _stackPointer;
-                int count = Encoding.UTF8.GetByteCount(value);
+                var pointer = _stackPointer;
+                var count = Encoding.UTF8.GetByteCount(value);
                 if (count + 1 > _stackSize)
                 {
                     var buffer = new byte[count + 1];
@@ -60,11 +60,9 @@ namespace OpenSlideNET.Interop
 
             public void Dispose()
             {
-                if (_handle.IsAllocated)
-                {
-                    _handle.Free();
-                    _handle = default;
-                }
+                if (!_handle.IsAllocated) return;
+                _handle.Free();
+                _handle = default;
             }
 
         }

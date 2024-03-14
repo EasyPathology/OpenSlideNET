@@ -14,8 +14,8 @@ namespace OpenSlideNET.Interop {
 		/// </summary>
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <returns>A NULL-terminated string array of property names, or an empty array if an error occurred. </returns>
-		public static unsafe string[] GetPropertyNames(OpenSlideImageSafeHandle osr) {
-			var list = new List<string>();
+		public static unsafe string?[] GetPropertyNames(OpenSlideImageSafeHandle osr) {
+			var list = new List<string?>();
 			var pCurrent = (IntPtr*)GetPropertyNamesInternal(osr);
 			while (*pCurrent != IntPtr.Zero) {
 				var name = StringFromNativeUtf8(*pCurrent);
@@ -36,7 +36,7 @@ namespace OpenSlideNET.Interop {
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <param name="name">The name of the desired property. Must be a valid name as given by openslide_get_property_names().</param>
 		/// <returns>The value of the named property, or NULL if the property doesn't exist or an error occurred. </returns>
-		public static string GetPropertyValue(OpenSlideImageSafeHandle osr, string name) {
+		public static string? GetPropertyValue(OpenSlideImageSafeHandle osr, string name) {
 			return StringFromNativeUtf8(GetPropertyValueInternal(osr, name));
 		}
 	}
