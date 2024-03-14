@@ -16,11 +16,14 @@ namespace OpenSlideNET.Interop {
 		public static unsafe string[] GetAssociatedImageNames(OpenSlideImageSafeHandle osr) {
 			var list = new List<string>();
 			var pCurrent = (IntPtr*)GetAssociatedImageNames_Internal(osr);
-			while (*pCurrent != IntPtr.Zero) {
+			while (*pCurrent != IntPtr.Zero)
+			{
 				var name = StringFromNativeUtf8(*pCurrent);
+				if (name == null) continue;
 				list.Add(name);
 				pCurrent++;
 			}
+
 			return list.ToArray();
 		}
 
@@ -35,9 +38,8 @@ namespace OpenSlideNET.Interop {
 		/// <param name="name">The name of the desired associated image. Must be a valid name as given by openslide_get_associated_image_names(). </param>
 		/// <param name="w">The width of the associated image, or -1 if an error occurred. </param>
 		/// <param name="h">The height of the associated image, or -1 if an error occurred. </param>
-		public static void GetAssociatedImageDimensions(OpenSlideImageSafeHandle osr, string name, out long w, out long h) {
+		public static void GetAssociatedImageDimensions(OpenSlideImageSafeHandle osr, string name, out long w, out long h) => 
 			GetAssociatedImageDimensions_Internal(osr, name, out w, out h);
-		}
 
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_read_associated_image", CallingConvention = CallingConvention.Cdecl)]
 		private static extern unsafe void ReadAssociatedImage_Internal(OpenSlideImageSafeHandle osr, string name, void* dest);
@@ -49,8 +51,64 @@ namespace OpenSlideNET.Interop {
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <param name="name">The name of the desired associated image. Must be a valid name as given by openslide_get_associated_image_names(). </param>
 		/// <param name="dest">The destination buffer for the ARGB data. </param>
-		public static unsafe void ReadAssociatedImage(OpenSlideImageSafeHandle osr, string name, void* dest) {
+		public static unsafe void ReadAssociatedImage(OpenSlideImageSafeHandle osr, string name, void* dest) => 
 			ReadAssociatedImage_Internal(osr, name, dest);
+
+
+		[DllImport(LibOpenSlide, EntryPoint = "openslide_get_associated_image_icc_profile_size", CallingConvention = CallingConvention.Cdecl)]
+		private static extern long GetAssociatedImageIccProfileSizeInternal(OpenSlideImageSafeHandle osr, string name);
+		
+		/// <summary>
+		/// Get the size in bytes of the ICC color profile for an associated image.
+		/// </summary>
+		/// <param name="osr">The OpenSlide object.</param>
+		/// <param name="name">
+		/// The name of the desired associated image. Must be a valid name as given by openslide_get_associated_image_names().
+		/// </param>
+		/// <returns> -1 on error, 0 if no profile is available, otherwise the profile size in bytes.</returns>
+		public static long GetAssociatedImageIccProfileSize(OpenSlideImageSafeHandle osr, string name) => 
+			GetAssociatedImageIccProfileSizeInternal(osr, name);
+		
+		[DllImport(LibOpenSlide, EntryPoint = "openslide_read_associated_image_icc_profile", CallingConvention = CallingConvention.Cdecl)]
+		private static extern unsafe void ReadAssociatedImageIccProfile(OpenSlideImageSafeHandle osr, string name, void* dest);
+		
+		/// <summary>
+		/// Copy the ICC color profile from an associated image.
+		/// This function reads the ICC color profile from an associated image into
+		/// the specified memory location.  @p dest must be a valid pointer to enough
+		/// memory to hold the profile.  Get the profile size with
+		/// openslide_get_associated_image_icc_profile_size().
+		/// If an error occurs or has occurred, then the memory pointed to by @p dest
+		/// will be cleared.
+		/// </summary>
+		/// <param name="osr"></param>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		/// <exception cref="OpenSlideException"></exception>
+		public static unsafe byte[] ReadAssociatedImageIccProfile(OpenSlideImageSafeHandle osr, string name) {
+			var size = GetAssociatedImageIccProfileSize(osr, name);
+			switch (size)
+			{
+				case 0:
+					return Array.Empty<byte>();
+				case -1:
+					throw new OpenSlideException(GetError(osr));
+			}
+
+			var buffer = new byte[size];
+			fixed (void* p = buffer) {
+				ReadAssociatedImageIccProfile(osr, name, p);
+			}
+			return buffer;
 		}
 	}
 }
+  
+ 
+  
+  
+  
+  
+ 
+  
+  

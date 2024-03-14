@@ -14,11 +14,12 @@ namespace OpenSlideNET.Interop {
 		/// </summary>
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <returns>A NULL-terminated string array of property names, or an empty array if an error occurred. </returns>
-		public static unsafe string?[] GetPropertyNames(OpenSlideImageSafeHandle osr) {
-			var list = new List<string?>();
+		public static unsafe string[] GetPropertyNames(OpenSlideImageSafeHandle osr) {
+			var list = new List<string>();
 			var pCurrent = (IntPtr*)GetPropertyNamesInternal(osr);
 			while (*pCurrent != IntPtr.Zero) {
 				var name = StringFromNativeUtf8(*pCurrent);
+				if (name is null) continue;
 				list.Add(name);
 				pCurrent++;
 			}

@@ -14,10 +14,7 @@ namespace OpenSlideNET
         /// Initializes a new instance of the OpenSlideImageSafeHandle class with the specified handle value.
         /// </summary>
         /// <param name="handle">The OpenSlide handle.</param>
-        public OpenSlideImageSafeHandle(IntPtr handle) : base(IntPtr.Zero, true)
-        {
-            SetHandle(handle);
-        }
+        public OpenSlideImageSafeHandle(IntPtr handle) : base(IntPtr.Zero, true) => SetHandle(handle);
 
         /// <summary>
         /// Gets a value indicating whether the handle value is invalid

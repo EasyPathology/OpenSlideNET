@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace OpenSlideNET.Interop
 {
     /// <summary>
-    /// The interop helpler for OpenSlide.
+    /// The interop helper for OpenSlide.
     /// </summary>
     public static partial class OpenSlideInterop
     {
@@ -160,10 +160,6 @@ namespace OpenSlideNET.Interop
         /// <summary>
         /// Get the version of the OpenSlide library.
         /// </summary>
-        public static string GetVersion()
-        {
-            var pResult = GetVersionInternal();
-            return StringFromNativeUtf8(pResult);
-        }
+        public static string GetVersion() => StringFromNativeUtf8(GetVersionInternal())!;
     }
 }

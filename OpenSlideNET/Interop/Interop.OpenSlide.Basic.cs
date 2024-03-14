@@ -7,7 +7,7 @@ namespace OpenSlideNET.Interop {
 		private static readonly object s_closeLock = new();
 
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_detect_vendor", CallingConvention = CallingConvention.Cdecl)]
-		private static extern IntPtr DetectVendor_Internal(string filename);
+		private static extern IntPtr DetectVendorInternal(string filename);
 
 		/// <summary>
 		///     Quickly determine whether a whole slide image is recognized.
@@ -18,9 +18,9 @@ namespace OpenSlideNET.Interop {
 		/// </summary>
 		/// <param name="filename">The filename to check. </param>
 		/// <returns>An identification of the format vendor for this file, or NULL. </returns>
-		public static unsafe string DetectVendor(string filename) {
+		public static string DetectVendor(string filename) {
 			Debug.Assert(filename != null);
-			return StringFromNativeUtf8(DetectVendor_Internal(filename));
+			return StringFromNativeUtf8(DetectVendorInternal(filename))!;
 		}
 
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_open", CallingConvention = CallingConvention.Cdecl)]
@@ -71,7 +71,7 @@ namespace OpenSlideNET.Interop {
 		private static extern void GetLevelDimensionsInternal(OpenSlideImageSafeHandle osr, int level, out long w, out long h);
 
 		/// <summary>
-		///     Get the dimensions of a level.
+		/// Get the dimensions of a level.
 		/// </summary>
 		/// <param name="osr">The OpenSlide object. </param>
 		/// <param name="level">The desired level. </param>
@@ -95,7 +95,7 @@ namespace OpenSlideNET.Interop {
 
 
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_get_best_level_for_downsample", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern int GetBestLevelForDownsampleInternal(OpenSlideImageSafeHandle osr, double downsample);
+		private static extern int GetBestLevelForDownsampleInternal(OpenSlideImageSafeHandle osr, double downsample);
 
 		/// <summary>
 		///     Get the best level to use for displaying the given downsample.
@@ -126,6 +126,43 @@ namespace OpenSlideNET.Interop {
 		public static unsafe void ReadRegion(OpenSlideImageSafeHandle osr, void* dest, long x, long y, int level, long w, long h)
 			=> ReadRegionInternal(osr, dest, x, y, level, w, h);
 
+		[DllImport(LibOpenSlide, EntryPoint = "openslide_get_icc_profile_size", CallingConvention = CallingConvention.Cdecl)]
+		private static extern long GetIccProfileSizeInternal(OpenSlideImageSafeHandle osr);
+
+		/// <summary>
+		///  Get the size in bytes of the ICC color profile for the whole slide image.
+		/// </summary>
+		/// <param name="osr">The OpenSlide object.</param>
+		/// <returns></returns>
+		public static long GetIccProfileSize(OpenSlideImageSafeHandle osr) => GetIccProfileSizeInternal(osr);
+
+		private static extern unsafe void ReadIccProfileInternal(OpenSlideImageSafeHandle osr, void* dest);
+		
+		/// <summary>
+		/// Copy the ICC color profile from a whole slide image.
+		/// This function reads the ICC color profile from the slide into the specified
+		/// memory location.  @p dest must be a valid pointer to enough memory
+		/// to hold the profile.  Get the profile size with
+		/// openslide_get_icc_profile_size().
+		/// If an error occurs or has occurred, then the memory pointed to by @p dest
+		/// will be cleared.
+		/// </summary>
+		/// <param name="osr">The OpenSlide object.</param>
+		/// <returns>The destination buffer for the ICC color profile.</returns>
+		public static unsafe byte[] ReadIccProfile(OpenSlideImageSafeHandle osr) {
+			var size = GetIccProfileSize(osr);
+			if (size == 0) {
+				return Array.Empty<byte>();
+			}
+
+			var buffer = new byte[size];
+			fixed (byte* p = buffer) {
+				ReadIccProfileInternal(osr, p);
+			}
+
+			return buffer;
+		}
+		
 		[DllImport(LibOpenSlide, EntryPoint = "openslide_close", CallingConvention = CallingConvention.Cdecl)]
 		private static extern void CloseInternal(IntPtr osr);
 
