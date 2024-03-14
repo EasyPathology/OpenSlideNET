@@ -12,13 +12,13 @@ namespace OpenSlideNET.Interop
     public static partial class OpenSlideInterop
     {
 #if LINUX
-        private const string LibOpenSlide = "libopenslide.so.0";
+        private const string LibOpenSlide = "libopenslide.so.1";
         private const string LibRelativePath = @"runtimes\linux-x64\native\";
 #elif OSX
-        private const string LibOpenSlide = "libopenslide.0.dylib";
+        private const string LibOpenSlide = "libopenslide.1.dylib";
         private const string LibRelativePath = @"runtimes\osx-x64\native\";
 #else
-        private const string LibOpenSlide = "libopenslide-0.dll";
+        private const string LibOpenSlide = "libopenslide-1.dll";
         private const string LibRelativePath = @"runtimes\win-x64\native\";
 #endif
 

@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET", "OpenSlideNET\OpenSlideNET.csproj", "{93F26966-FF6D-4953-B730-7B9C21CCB4FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET.Test", "OpenSlideNET.Test\OpenSlideNET.Test.csproj", "{28204C50-9A82-4360-9631-16652104197B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Debug|Any CPU.Build.0 = Debug|x64
 		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Release|Any CPU.ActiveCfg = Release|x64
 		{93F26966-FF6D-4953-B730-7B9C21CCB4FC}.Release|Any CPU.Build.0 = Release|x64
+		{28204C50-9A82-4360-9631-16652104197B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28204C50-9A82-4360-9631-16652104197B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28204C50-9A82-4360-9631-16652104197B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28204C50-9A82-4360-9631-16652104197B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
