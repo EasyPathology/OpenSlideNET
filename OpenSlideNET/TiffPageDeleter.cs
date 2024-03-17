@@ -11,7 +11,7 @@ namespace OpenSlideNET;
 
 public static class TiffPageDeleter
 {
-    private record IFD(uint Offset, Tag[] Tags, uint NextOffset)
+    public record IFD(uint Offset, Tag[] Tags, uint NextOffset)
     {
         public string CompressionName => Tags.FirstOrDefault(x => x.Id == TagId.Compression)?.ValueOrValueOffset switch
         {
@@ -26,7 +26,7 @@ public static class TiffPageDeleter
         };
     }
 
-    private enum TagId : ushort
+    public enum TagId : ushort
     {
         ImageWidth = 0x100,
         ImageLength = 257,
@@ -39,7 +39,7 @@ public static class TiffPageDeleter
         StripByteCounts = 279
     }
 
-    private enum TagValueType : ushort
+    public enum TagValueType : ushort
     {
         Byte = 1,
         ASCII,
@@ -55,7 +55,7 @@ public static class TiffPageDeleter
         Double
     }
 
-    private record Tag(uint Offset, TagId Id, TagValueType ValueType, uint ValueCount, uint ValueOrValueOffset)
+    public record Tag(uint Offset, TagId Id, TagValueType ValueType, uint ValueCount, uint ValueOrValueOffset)
     {
         public bool IsValueOffset
         {
@@ -95,21 +95,20 @@ public static class TiffPageDeleter
         }
     }
 
-    public static void DeletePages(string inputPath, string outputPath, params int[] indices)
-    {
-        if (indices == null || indices.Length == 0)
-        {
-            throw new ArgumentException("No indices input", nameof(indices));
-        }
+    public static void NdpiDeleteMacro(string inputPath, string outputPath) =>
+        DeletePages(inputPath, outputPath, x => x.Count > 2 ? [x.Count - 2] : []);
 
-        using var input = MemoryMappedFile.CreateFromFile(inputPath, FileMode.Open, null, 0L, MemoryMappedFileAccess.ReadWrite);
+    public static void DeletePages(string inputPath, string outputPath, Func<IReadOnlyList<IFD>, int[]> indices)
+    {
+        using var input =
+            MemoryMappedFile.CreateFromFile(inputPath, FileMode.Open, null, 0L, MemoryMappedFileAccess.ReadWrite);
         using var inputAccessor = input.CreateViewAccessor();
-        var ifdList = ReadIFDs(inputAccessor).ToList();
+        var       ifdList       = ReadIFDs(inputAccessor).ToList();
         if (ifdList.Count == 0)
         {
             throw new NotSupportedException("No TIFF pages found");
         }
-        
+
         Debug.WriteLine("Index  Offset      Compression");
         foreach (var (i, offset, compression) in ifdList.Select((IFD x, int i) => (i, x.Offset, x.CompressionName)))
         {
@@ -117,61 +116,61 @@ public static class TiffPageDeleter
         }
 
         var inputFileInfo = new FileInfo(inputPath);
-        var totalLength = (uint)inputFileInfo.Length;
+        var totalLength   = (uint)inputFileInfo.Length;
         using var output = File.Exists(outputPath) && inputFileInfo.FullName == new FileInfo(outputPath).FullName
-            ? input : MemoryMappedFile.CreateFromFile(outputPath, FileMode.Create, null, totalLength);
+            ? input
+            : MemoryMappedFile.CreateFromFile(outputPath, FileMode.Create, null, totalLength);
         using var outputAccessor = output.CreateViewAccessor();
-        var inputPtr = inputAccessor.SafeMemoryMappedViewHandle.DangerousGetHandle();
-        var outputPtr = outputAccessor.SafeMemoryMappedViewHandle.DangerousGetHandle();
+        var       inputPtr       = inputAccessor.SafeMemoryMappedViewHandle.DangerousGetHandle();
+        var       outputPtr      = outputAccessor.SafeMemoryMappedViewHandle.DangerousGetHandle();
         MemoryCopy(0L, 0L, totalLength);
-        foreach (var (i, ifd) in ifdList.Select((x, i) => (i, x)).Where(i => indices.Contains(i.i)))
+        var list = indices(ifdList);
+        foreach (var (i, ifd) in ifdList.Select(static (x, i) => (i, x)).Where(i => list.Contains(i.i)))
         {
-            var imageWidthTag = ifd.Tags.FirstOrDefault(tag => tag.Id == TagId.ImageWidth);
-            var imageLengthTag = ifd.Tags.FirstOrDefault(tag => tag.Id == TagId.ImageLength);
-            var compressionTag = ifd.Tags.FirstOrDefault(tag => tag.Id == TagId.Compression);
-            var stripOffsetsTag = ifd.Tags.FirstOrDefault(tag => tag.Id == TagId.StripOffsets);
-            var stripByteCountsTag = ifd.Tags.FirstOrDefault(tag => tag.Id == TagId.StripByteCounts);
-            if (imageWidthTag == null || imageLengthTag == null || compressionTag == null || stripOffsetsTag == null || stripByteCountsTag == null)
-            {
+            var imageWidthTag      = ifd.Tags.FirstOrDefault(static tag => tag.Id == TagId.ImageWidth);
+            var imageLengthTag     = ifd.Tags.FirstOrDefault(static tag => tag.Id == TagId.ImageLength);
+            var compressionTag     = ifd.Tags.FirstOrDefault(static tag => tag.Id == TagId.Compression);
+            var stripOffsetsTag    = ifd.Tags.FirstOrDefault(static tag => tag.Id == TagId.StripOffsets);
+            var stripByteCountsTag = ifd.Tags.FirstOrDefault(static tag => tag.Id == TagId.StripByteCounts);
+            if (imageWidthTag         == null
+                || imageLengthTag     == null
+                || compressionTag     == null
+                || stripOffsetsTag    == null
+                || stripByteCountsTag == null)
                 throw new NotSupportedException($"Cannot find necessary tags to delete page {i} data");
-            }
-            
+
             if (stripOffsetsTag.ValueCount > 1)
-            {
                 throw new NotSupportedException($"Cannot handle strip data with count > 1, page {i}");
-            }
-            
+
             var stripByteCount = stripByteCountsTag.ReadActualValue(inputAccessor);
-            var offset = stripOffsetsTag.ReadActualValue(inputAccessor);
-            var stripSpan = CreateSpan(outputPtr + offset, (int)stripByteCount);
+            var offset         = stripOffsetsTag.ReadActualValue(inputAccessor);
+            var stripSpan      = CreateSpan(outputPtr + offset, (int)stripByteCount);
             stripSpan.Clear();
             using var emptyMat = new Mat((int)imageLengthTag.ReadActualValue(inputAccessor),
                 (int)imageWidthTag.ReadActualValue(inputAccessor),
                 MatType.CV_8UC3,
                 Scalar.Black);
             Cv2.ImEncode(".jpg", emptyMat, out var buf);
-            
+
             if (buf.Length > stripByteCount)
-            {
-                throw new NotSupportedException($"The new strip data is larger than the original, page {i}, cannot rewrite");
-            }
-            
+                throw new NotSupportedException(
+                    $"The new strip data is larger than the original, page {i}, cannot rewrite");
+
             new Span<byte>(buf).CopyTo(stripSpan);
             compressionTag = compressionTag with
             {
-                ValueOrValueOffset = 6u
+                ValueOrValueOffset = 1u
             };
             compressionTag.Write(outputAccessor);
         }
 
+        return;
+
         unsafe void MemoryCopy(long sourceOffset, long destinationOffset, long length)
         {
-            var source = (byte*)(inputPtr + (nint)sourceOffset);
+            var source      = (byte*)(inputPtr  + (nint)sourceOffset);
             var destination = (byte*)(outputPtr + (nint)destinationOffset);
-            if (source != destination)
-            {
-                Buffer.MemoryCopy(source, destination, length, length);
-            }
+            if (source != destination) Buffer.MemoryCopy(source, destination, length, length);
         }
     }
 

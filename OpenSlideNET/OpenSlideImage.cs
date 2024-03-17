@@ -528,7 +528,7 @@ public sealed class OpenSlideImage : ISlideImage
 	/// </summary>
 	public void Dispose()
 	{
-		var tempChange = Interlocked.Exchange(ref handle!, null);
+		var tempChange = Interlocked.Exchange(ref handle, null);
 		if (tempChange is not null && !leaveOpen)
 		{
 			tempChange.Dispose();
