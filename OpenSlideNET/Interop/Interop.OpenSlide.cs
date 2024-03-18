@@ -11,24 +11,24 @@ namespace OpenSlideNET.Interop
     /// </summary>
     public static partial class OpenSlideInterop
     {
-#if LINUX
-        private const string LibOpenSlide = "libopenslide.so.1";
-        private const string LibRelativePath = @"runtimes\linux-x64\native\";
-#elif OSX
-        private const string LibOpenSlide = "libopenslide.1.dylib";
-        private const string LibRelativePath = @"runtimes\osx-x64\native\";
-#else
-        private const string LibOpenSlide = "libopenslide-1.dll";
-        private const string LibRelativePath = @"runtimes\win-x64\native\";
-#endif
+        private const string LibOpenSlide = "libopenslide";
 
-		static OpenSlideInterop() {
-			NativeLibrary.SetDllImportResolver(typeof(OpenSlideInterop).Assembly, ImportResolver);
-		}
+		static OpenSlideInterop()
+        {
+            var lib = Environment.OSVersion.Platform switch
+            {
+                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows => ("libopenslide-1.dll", "win-x64"),
+                PlatformID.Unix => ("libopenslide.so.1.0.0", "linux-x64"),
+                PlatformID.MacOSX => ("libopenslide.1.dylib", "osx-x64"),
+                _ => throw new PlatformNotSupportedException()
+            };
 
-		private static IntPtr ImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
-            return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, LibRelativePath, libraryName));
-		}
+            NativeLibrary.SetDllImportResolver(typeof(OpenSlideInterop).Assembly,
+                (_, _, _) =>
+                    NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory,
+                        $@"runtimes\{lib.Item2}\native\",
+                        lib.Item1)));
+        }
 
 		/// <summary>
 		/// The name of the property containing a slide's comment, if any. 

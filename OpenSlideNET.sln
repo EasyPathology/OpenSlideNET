@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET", "OpenSlideNE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET.Test", "OpenSlideNET.Test\OpenSlideNET.Test.csproj", "{28204C50-9A82-4360-9631-16652104197B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSlideNET.Tool", "OpenSlideNET.Tool\OpenSlideNET.Tool.csproj", "{8AD6898B-2C71-4A2E-837F-814763349826}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{28204C50-9A82-4360-9631-16652104197B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28204C50-9A82-4360-9631-16652104197B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28204C50-9A82-4360-9631-16652104197B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AD6898B-2C71-4A2E-837F-814763349826}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AD6898B-2C71-4A2E-837F-814763349826}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AD6898B-2C71-4A2E-837F-814763349826}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AD6898B-2C71-4A2E-837F-814763349826}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

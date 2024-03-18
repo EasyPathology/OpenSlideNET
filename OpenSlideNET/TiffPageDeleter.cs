@@ -57,34 +57,29 @@ public static class TiffPageDeleter
 
     public record Tag(uint Offset, TagId Id, TagValueType ValueType, uint ValueCount, uint ValueOrValueOffset)
     {
-        public bool IsValueOffset
-        {
-            get
+        public bool IsValueOffset =>
+            ValueType switch
             {
-                var result = ValueType switch
-                {
-                    TagValueType.Byte => ValueCount > 4,
-                    TagValueType.ASCII => ValueCount > 4,
-                    TagValueType.SByte => ValueCount > 4,
-                    TagValueType.Undefined => ValueCount > 4,
-                    TagValueType.Short => ValueCount > 2,
-                    TagValueType.SShort => ValueCount > 2,
-                    TagValueType.Long => ValueCount > 1,
-                    TagValueType.SLong => ValueCount > 1,
-                    TagValueType.Float => ValueCount > 1,
-                    TagValueType.Rational => true,
-                    TagValueType.SRational => true,
-                    TagValueType.Double => true,
-                    _ => throw new ArgumentOutOfRangeException(nameof(ValueType), $"Unsupported value type: {ValueType}")
-                };
-                return result;
-            }
-        }
+                TagValueType.Byte      => ValueCount > 4,
+                TagValueType.ASCII     => ValueCount > 4,
+                TagValueType.SByte     => ValueCount > 4,
+                TagValueType.Undefined => ValueCount > 4,
+                TagValueType.Short     => ValueCount > 2,
+                TagValueType.SShort    => ValueCount > 2,
+                TagValueType.Long      => ValueCount > 1,
+                TagValueType.SLong     => ValueCount > 1,
+                TagValueType.Float     => ValueCount > 1,
+                TagValueType.Rational  => true,
+                TagValueType.SRational => true,
+                TagValueType.Double    => true,
+                _ => throw new ArgumentOutOfRangeException(nameof(ValueType),
+                    $"Unsupported value type: {ValueType}")
+            };
 
-        public uint ReadActualValue(MemoryMappedViewAccessor accessor)
-        {
-            return IsValueOffset ? accessor.ReadUInt32(ValueOrValueOffset) : ValueOrValueOffset;
-        }
+        public uint ReadActualValue(MemoryMappedViewAccessor accessor) =>
+            IsValueOffset
+                ? accessor.ReadUInt32(ValueOrValueOffset)
+                : ValueOrValueOffset;
 
         public void Write(MemoryMappedViewAccessor accessor)
         {
@@ -110,7 +105,7 @@ public static class TiffPageDeleter
         }
 
         Debug.WriteLine("Index  Offset      Compression");
-        foreach (var (i, offset, compression) in ifdList.Select((IFD x, int i) => (i, x.Offset, x.CompressionName)))
+        foreach (var (i, offset, compression) in ifdList.Select(static (x, i) => (i, x.Offset, x.CompressionName)))
         {
             Debug.WriteLine($"{i,-5}  0x{offset:X8}  {compression}");
         }
