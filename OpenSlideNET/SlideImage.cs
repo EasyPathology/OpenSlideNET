@@ -79,7 +79,7 @@ public interface ISlideImage : IDisposable {
 
 public static class SlideImage {
 	public static HashSet<string> SupportedExtensions { get; } = new() {
-		".ndpi", ".svs", ".tiff", ".mrxs"
+		".ndpi", ".svs", ".tiff", ".tif", ".mrxs"
 	};
 
 	/// <summary>
