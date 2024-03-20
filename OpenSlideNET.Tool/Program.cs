@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using OpenSlideNET;
-
+Console.WriteLine($"{nameof(OpenSlideNET)}.Tools Start");
 AppDomain.CurrentDomain.UnhandledException += async (o, e) =>
 {
     var msg = e.ToString();
