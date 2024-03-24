@@ -24,7 +24,7 @@
 
   
   <PropertyGroup Condition="$(SolutionName) == 'EasyPathology'">
-    <AssemblyOriginatorKeyFile>..\..\Key\Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\Key\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>True</SignAssembly>
   </PropertyGroup>
 </Project>
