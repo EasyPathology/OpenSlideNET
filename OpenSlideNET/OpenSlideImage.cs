@@ -210,7 +210,7 @@ public sealed class OpenSlideImage : ISlideImage {
 	/// </summary>
 	public string QuickHash2 => quickHash2 ??= SlideHash.GetHash2(slidePath);
 
-	private string quickHash2;
+	private string? quickHash2;
 
 	/// <summary>
 	/// Get microns per pixel in the left to right direction.
