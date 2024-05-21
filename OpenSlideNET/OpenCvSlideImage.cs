@@ -17,7 +17,7 @@ public class OpenCvSlideImage : ISlideImage
     public Color4B? BackgroundColor => null;
 
     public string QuickHash1 { get; }
-    
+
     public string QuickHash2 { get; }
 
     public Size2D? MicronsPerPixel => null;
@@ -36,7 +36,7 @@ public class OpenCvSlideImage : ISlideImage
 
     public Size2I GetLevelTileSize(int level) => new(mat.Width, mat.Height);
 
-    public Size2I GetLevelOverlap(int level) => default;
+    public Size2I GetLevelOverlap(int level) => new(1, 1);
 
     public double GetLevelDownsample(int level) => 1d;
 
@@ -52,16 +52,16 @@ public class OpenCvSlideImage : ISlideImage
     {
         var roi = new Rect((int)x, (int)y, (int)width, (int)height);
         using var roiMat = new Mat(mat, roi);
-        unsafe
+        var step = roiMat.Step();
+        for (var row = 0; row < roiMat.Rows; row++)
         {
-            Buffer.MemoryCopy(
-                roiMat.Data.ToPointer(), 
-                buffer.ToPointer(), 
-                width * height * 4, 
-                roiMat.DataEnd - roiMat.DataStart);
+            unsafe
+            {
+                Buffer.MemoryCopy(roiMat.DataPointer + row * step, (byte*)buffer + row * width * 4, width * 4, width * 4);
+            }
         }
     }
-    
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
