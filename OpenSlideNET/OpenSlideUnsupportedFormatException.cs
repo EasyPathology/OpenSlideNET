@@ -10,7 +10,8 @@ namespace OpenSlideNET
         /// <summary>
         /// Initializes a new instance of the <see cref="OpenSlideUnsupportedFormatException"/> class.
         /// </summary>
-        public OpenSlideUnsupportedFormatException() : base() { }
+        public OpenSlideUnsupportedFormatException()
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OpenSlideUnsupportedFormatException"/> class with a specified error message.
