@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using EasyPathology.Abstractions.DataTypes;
+using OpenSlideNET.Extensions;
 using OpenSlideNET.Interop;
 
 namespace OpenSlideNET;
@@ -131,7 +132,7 @@ public static class SlideImage
 
         if (DziSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
         {
-            return new DziSlideImage(slidePath, SlideHash.GetHash2(slidePath));
+            return new DziSlideImage(slidePath, Path.Combine(Path.GetDirectoryName(slidePath).NotNull(), "output_files"), SlideHash.GetHash2(slidePath));
         }
 
         throw new OpenSlideUnsupportedFormatException();

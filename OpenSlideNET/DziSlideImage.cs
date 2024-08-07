@@ -20,6 +20,7 @@ public class DziSlideImage : ISlideImage
 
     internal protected DziSlideImage(
         string dziPath,
+        string tileBasePath,
         string quickHash,
         Size2D? micronsPerPixel = null,
         Color4B? backgroundColor = null)
@@ -29,15 +30,15 @@ public class DziSlideImage : ISlideImage
             using var fs = File.OpenRead(dziPath);
             using var xml = XmlReader.Create(fs);
             var serializer = new XmlSerializer(typeof(Image));
-            image = ((Image?)serializer.Deserialize(xml)).NotNull();
+            image = (serializer.Deserialize(xml) as Image).NotNull();
         }
         catch (Exception e)
         {
             throw new FormatException(e.Message, e);
         }
 
+        this.tileBasePath = tileBasePath;
         QuickHash2 = quickHash;
-        tileBasePath = Path.GetDirectoryName(dziPath).NotNull();
         Dimensions = new ImageDimensions(image.Size.Width, image.Size.Height);
         var levelDimensionsList = new List<ImageDimensions>();
         var levelWidth = image.Size.Width;
@@ -115,11 +116,7 @@ public class DziSlideImage : ISlideImage
             throw new NotSupportedException();
         }
 
-        ReadRegion(
-            $"output_files/{LevelCount - level}/{x}_{y}.{image.Format}",
-            width,
-            height,
-            buffer);
+        ReadRegion($"{LevelCount - level}/{x}_{y}.{image.Format}", width, height, buffer);
     }
 
     protected virtual void ReadRegion(string relativeTilePath, long width, long height, IntPtr buffer)
@@ -130,6 +127,7 @@ public class DziSlideImage : ISlideImage
             unsafe
             {
                 Unsafe.InitBlock(buffer.ToPointer(), 0, (uint)(width * height * 4));
+                return;
             }
         }
 
