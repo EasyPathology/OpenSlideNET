@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using EasyPathology.Abstractions.DataTypes;
-using OpenSlideNET.Extensions;
+using EasyPathology.Abstractions.Extensions;
 using OpenSlideNET.Interop;
 
 namespace OpenSlideNET;

@@ -6,8 +6,8 @@ using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Serialization;
 using EasyPathology.Abstractions.DataTypes;
+using EasyPathology.Abstractions.Extensions;
 using OpenCvSharp;
-using OpenSlideNET.Extensions;
 
 namespace OpenSlideNET;
 
@@ -30,7 +30,7 @@ public class DziSlideImage : ISlideImage
             using var fs = File.OpenRead(dziPath);
             using var xml = XmlReader.Create(fs);
             var serializer = new XmlSerializer(typeof(Image));
-            image = (serializer.Deserialize(xml) as Image).NotNull();
+            image = serializer.Deserialize(xml).NotNull<Image>();
         }
         catch (Exception e)
         {
