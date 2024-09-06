@@ -74,6 +74,7 @@ public interface ISlideImage : IDisposable
     string QuickHash1 { get; }
     string QuickHash2 { get; }
     Size2D? MicronsPerPixel { get; }
+    string FullPath { get; }
 
     ImageDimensions GetLevelDimensions(int level);
     Size2I GetLevelTileSize(int level);

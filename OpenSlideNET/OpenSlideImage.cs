@@ -23,7 +23,6 @@ public sealed class OpenSlideImage : ISlideImage
 
     private OpenSlideImageSafeHandle? handle;
     private readonly bool leaveOpen;
-    private readonly string slidePath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenSlideImage"/> class with the specified <see cref="OpenSlideImageSafeHandle"/>.
@@ -39,7 +38,7 @@ public sealed class OpenSlideImage : ISlideImage
         }
         this.handle = handle;
         this.leaveOpen = leaveOpen;
-        this.slidePath = slidePath;
+        this.FullPath = slidePath;
 
         QuickHash1 = this[OpenSlideInterop.OpenSlidePropertyNameQuickHash1] ?? SlideHash.GetHash(slidePath);
 
@@ -164,6 +163,8 @@ public sealed class OpenSlideImage : ISlideImage
 
     public Color4B? BackgroundColor { get; private set; }
 
+    public string FullPath { get; }
+
     /// <summary>
     /// Get a (width, height) tuple for level k of the slide.
     /// </summary>
@@ -244,7 +245,7 @@ public sealed class OpenSlideImage : ISlideImage
     /// <summary>
     /// Gets the quick hash of the slide.
     /// </summary>
-    public string QuickHash2 => quickHash2 ??= SlideHash.GetHash2(slidePath);
+    public string QuickHash2 => quickHash2 ??= SlideHash.GetHash2(FullPath);
 
     private string? quickHash2;
 

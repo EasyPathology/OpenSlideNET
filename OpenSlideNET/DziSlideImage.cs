@@ -74,6 +74,7 @@ public class DziSlideImage : ISlideImage
     public string QuickHash2 { get; }
     
     public Size2D? MicronsPerPixel { get; }
+    public string FullPath => tileBasePath;
 
     private readonly ImageDimensions[] levelDimensions;
 

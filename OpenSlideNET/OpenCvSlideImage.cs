@@ -21,6 +21,7 @@ public class OpenCvSlideImage : ISlideImage
     public string QuickHash2 { get; }
 
     public Size2D? MicronsPerPixel => null;
+    public string FullPath { get; }
 
     private readonly Mat mat;
 
@@ -28,6 +29,7 @@ public class OpenCvSlideImage : ISlideImage
     {
         QuickHash1 = SlideHash.GetHash(filePath);
         QuickHash2 = SlideHash.GetHash2(filePath);
+        FullPath = filePath;
         mat = Cv2.ImRead(filePath);
         Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2BGRA);
     }
