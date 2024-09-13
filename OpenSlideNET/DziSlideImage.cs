@@ -31,8 +31,7 @@ public class DziSlideImage : ISlideImage
             using var xml = XmlReader.Create(fs);
             var serializer = new XmlSerializer(typeof(Image));
             image = serializer.Deserialize(xml).NotNull<Image>();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             throw new FormatException(e.Message, e);
         }
@@ -64,15 +63,15 @@ public class DziSlideImage : ISlideImage
     }
 
     public int LevelCount => levelDimensions.Length;
-    
+
     public ImageDimensions Dimensions { get; }
 
     public Color4B? BackgroundColor { get; }
 
     public string QuickHash1 => QuickHash2;
-    
+
     public string QuickHash2 { get; }
-    
+
     public Size2D? MicronsPerPixel { get; }
     public string FullPath => tileBasePath;
 
@@ -103,46 +102,59 @@ public class DziSlideImage : ISlideImage
     public void ReadRegion(int level, long x, long y, long width, long height, IntPtr buffer)
     {
         var ds = GetLevelDownsample(level);
+
         x = (int)(x / ds);
         if (x != 0) x += image.Overlap; // 除了最左边的tile，其他tile都有overlap
-        x /= image.TileSize;
-
+        var xEnd = x + width;
         y = (int)(y / ds);
         if (y != 0) y += image.Overlap;
-        y /= image.TileSize;
+        var yEnd = y + height;
 
-        if (width > image.TileSize + (x == 0 ? image.Overlap : 2 * image.Overlap) ||
-            height > image.TileSize + (y == 0 ? image.Overlap : 2 * image.Overlap))
+        using var mat = Mat.FromPixelData((int)height, (int)width, MatType.CV_8UC4, buffer);
+        for (var yy = y; yy < yEnd - 2 * image.Overlap; yy += image.TileSize)
         {
-            throw new NotSupportedException();
+            var regionHeight = Math.Min(image.TileSize + (yy == 0 ? image.Overlap : 2 * image.Overlap), yEnd - yy);
+            for (var xx = x; xx < xEnd - 2 * image.Overlap; xx += image.TileSize)
+            {
+                var regionWidth = Math.Min(image.TileSize + (xx == 0 ? image.Overlap : 2 * image.Overlap), xEnd - xx);
+                using var roi = mat[new Rect((int)(xx - x), (int)(yy - y), (int)regionWidth, (int)regionHeight)];
+                ReadRegion($"{LevelCount - level}/{xx / image.TileSize}_{yy / image.TileSize}.{image.Format}", roi);
+            }
         }
-
-        ReadRegion($"{LevelCount - level}/{x}_{y}.{image.Format}", width, height, buffer);
     }
 
-    protected virtual void ReadRegion(string relativeTilePath, long width, long height, IntPtr buffer)
+    protected virtual void ReadRegion(string relativeTilePath, Mat roi)
     {
         var tilePath = Path.Combine(tileBasePath, relativeTilePath);
         if (!File.Exists(tilePath))
         {
-            unsafe
-            {
-                Unsafe.InitBlock(buffer.ToPointer(), 0, (uint)(width * height * 4));
-                return;
-            }
+            roi.SetTo(new Scalar(0, 0, 0, 0));
+            return;
         }
 
-        using var mat = Cv2.ImRead(tilePath, ImreadModes.Unchanged);
-        if (mat.Type() == MatType.CV_8UC3)
+        using var tileImage = new Mat(tilePath, ImreadModes.Unchanged);
+        if (tileImage.Empty())
         {
-            Cv2.CvtColor(mat, mat, ColorConversionCodes.RGB2RGBA);
+            roi.SetTo(new Scalar(0, 0, 0, 0));
+            return;
         }
-        unsafe
+
+        if (tileImage.Channels() == 3)
         {
-            Buffer.MemoryCopy(mat.DataPointer,
-                buffer.ToPointer(),
-                width * height * 4,
-                mat.Total() * mat.ElemSize());
+            Cv2.CvtColor(tileImage, tileImage, ColorConversionCodes.BGR2BGRA);
+        }
+
+        if (tileImage.Size() != roi.Size())
+        {
+            var width = Math.Min(tileImage.Width, roi.Width);
+            var height = Math.Min(tileImage.Height, roi.Height);
+            var rect = new Rect(0, 0, width, height);
+            using var croppedTileImage = new Mat(tileImage, rect);
+            croppedTileImage.CopyTo(roi);
+        } 
+        else
+        {
+            tileImage.CopyTo(roi);
         }
     }
 
