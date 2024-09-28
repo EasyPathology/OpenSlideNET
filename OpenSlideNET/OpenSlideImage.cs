@@ -19,7 +19,7 @@ public sealed class OpenSlideImage : ISlideImage
     /// </summary>
     public static string LibraryVersion => OpenSlideInterop.GetVersion();
     
-    public static string[] SupportedExtensions => [".ndpi", ".svs", ".tiff", ".tif", ".mrxs"];
+    public static string[] SupportedExtensions => [".ndpi", ".svs", ".tiff", ".tif", ".mrxs", ".dcm"];
 
     private OpenSlideImageSafeHandle? handle;
     private readonly bool leaveOpen;

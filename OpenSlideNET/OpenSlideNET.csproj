@@ -29,6 +29,10 @@
       <ProjectReference Include="..\..\..\EasyPathology.Abstractions\src\EasyPathology.Abstractions.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="runtimes\win-x64\native\" />
+    </ItemGroup>
+
     <PropertyGroup Condition="$(SolutionName) == 'EasyPathology'">
         <AssemblyOriginatorKeyFile>..\..\..\Key\Key.snk</AssemblyOriginatorKeyFile>
         <SignAssembly>True</SignAssembly>
