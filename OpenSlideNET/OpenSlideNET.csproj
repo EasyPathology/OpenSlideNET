@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -8,29 +8,34 @@
         <DebugType>embedded</DebugType>
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+	</PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(IsWindows)'=='true'">
         <None Update="runtimes\win-x64\native\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-
     </ItemGroup>
 
-    <ItemGroup>
+	<ItemGroup Condition="'$(IsLinux)'=='true'">
+		<None Update="runtimes\linux-x64\native\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
         <PackageReference Include="OpenCvSharp4" Version="4.10.0.20240616" />
     </ItemGroup>
 
-    <ItemGroup Condition="$(Platform.StartsWith('Win'))">
-        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708"/>
+    <ItemGroup Condition="'$(IsWindows)'=='true'">
+        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" />
     </ItemGroup>
+	
+	<ItemGroup Condition="'$(IsLinux)'=='true'">
+		<PackageReference Include="OpenCvSharp4_.runtime.ubuntu.20.04-x64" Version="4.10.0.20240616" />
+	</ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\EasyPathology.Abstractions\src\EasyPathology.Abstractions.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="runtimes\win-x64\native\" />
     </ItemGroup>
 
     <PropertyGroup Condition="$(SolutionName) == 'EasyPathology'">

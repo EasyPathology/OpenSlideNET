@@ -1,35 +1,20 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
+using EasyPathology.Abstractions.Utils;
 
 namespace OpenSlideNET.Interop
 {
     /// <summary>
-    /// The interop helpler for OpenSlide.
+    /// The interop helper for OpenSlide.
     /// </summary>
     public static partial class OpenSlideInterop
     {
-#if LINUX
-        private const string LibOpenSlide = "libopenslide.so.1";
-        private const string LibRelativePath = @"runtimes\linux-x64\native\";
-#elif OSX
-        private const string LibOpenSlide = "libopenslide.1.dylib";
-        private const string LibRelativePath = @"runtimes\osx-x64\native\";
-#else
-        private const string LibOpenSlide = "libopenslide-1.dll";
-        private const string LibRelativePath = @"runtimes\win-x64\native\";
-#endif
+        private const string LibOpenSlide = "libopenslide-1";
 
         static OpenSlideInterop()
         {
-            NativeLibrary.SetDllImportResolver(typeof(OpenSlideInterop).Assembly, ImportResolver);
-        }
-
-        private static IntPtr ImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
-        {
-            return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, LibRelativePath, libraryName));
+            NativeLibrary.SetDllImportResolver(typeof(OpenSlideInterop).Assembly, LibraryResolver.Default);
         }
 
         /// <summary>
