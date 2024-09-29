@@ -2,69 +2,43 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace OpenSlideNET.Interop
+namespace OpenSlideNET.Interop;
+
+public static partial class OpenSlideInterop
 {
-    public static partial class OpenSlideInterop
+    private static unsafe string? StringFromNativeUtf8(IntPtr nativeUtf8)
     {
-        internal static unsafe string? StringFromNativeUtf8(IntPtr nativeUtf8)
+        if (nativeUtf8 == IntPtr.Zero)
+            return null;
+        var len = 0;
+        while (*(byte*)(nativeUtf8 + len) != 0)
+            ++len;
+        return Encoding.UTF8.GetString((byte*)nativeUtf8, len);
+    }
+
+    private ref struct Utf8String : IDisposable
+    {
+        private GCHandle handle;
+
+        public Utf8String(string? value)
         {
-            if (nativeUtf8 == IntPtr.Zero)
-                return null;
-            var len = 0;
-            while (*(byte*)(nativeUtf8 + len) != 0)
-                ++len;
-            return Encoding.UTF8.GetString((byte*)nativeUtf8, len);
+            if (value == null)
+            {
+                handle = default;
+                return;
+            }
+
+            handle = GCHandle.Alloc(Encoding.UTF8.GetBytes(value), GCHandleType.Pinned);
         }
+        
+        public static implicit operator IntPtr(Utf8String utf8String) => 
+            utf8String.handle.IsAllocated ? utf8String.handle.AddrOfPinnedObject() : throw new ObjectDisposedException(nameof(Utf8String));
 
-        internal ref struct UnsafeUtf8Encoder
+        public void Dispose()
         {
-            private readonly IntPtr _stackPointer;
-            private readonly int _stackSize;
-            private GCHandle _handle;
-
-            public unsafe UnsafeUtf8Encoder(byte* stackPointer, int stackSize)
-            {
-                _stackPointer = (IntPtr)stackPointer;
-                _stackSize = stackSize;
-                _handle = default;
-            }
-
-            public unsafe IntPtr Encode(string? value)
-            {
-                if (value is null)
-                {
-                    return IntPtr.Zero;
-                }
-
-                if (_handle != default)
-                {
-                    _handle.Free();
-                    _handle = default;
-                }
-
-                var pointer = _stackPointer;
-                var count = Encoding.UTF8.GetByteCount(value);
-                if (count + 1 > _stackSize)
-                {
-                    var buffer = new byte[count + 1];
-                    _handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                    pointer = _handle.AddrOfPinnedObject();
-                }
-                fixed (char* pValue = value)
-                {
-                    Encoding.UTF8.GetBytes(pValue, value.Length, (byte*)pointer, count);
-                }
-                ((byte*)pointer)[count] = 0;
-                return pointer;
-            }
-
-            public void Dispose()
-            {
-                if (!_handle.IsAllocated) return;
-                _handle.Free();
-                _handle = default;
-            }
-
+            if (!handle.IsAllocated) return;
+            handle.Free();
+            handle = default;
         }
     }
 }

@@ -17,7 +17,7 @@ public sealed class OpenSlideImage : ISlideImage
     /// <summary>
     /// Gets the OpenSlide library version.
     /// </summary>
-    public static string LibraryVersion => OpenSlideInterop.GetVersion();
+    public static string? LibraryVersion => OpenSlideInterop.GetVersion();
     
     public static string[] SupportedExtensions => [".ndpi", ".svs", ".tiff", ".tif", ".mrxs", ".dcm"];
 
@@ -75,7 +75,7 @@ public sealed class OpenSlideImage : ISlideImage
     /// </summary>
     /// <param name="filename">the file to examine</param>
     /// <returns>the format vendor of the specified file.</returns>
-    public static string DetectFormat(string filename)
+    public static string? DetectFormat(string filename)
     {
         return OpenSlideInterop.DetectVendor(filename);
     }
@@ -392,7 +392,7 @@ public sealed class OpenSlideImage : ISlideImage
     {
         EnsureNotDisposed();
 
-        OpenSlideInterop.GetAssociatedImageDimensions(handle, name, out long w, out long h);
+        OpenSlideInterop.GetAssociatedImageDimensions(handle, name, out var w, out var h);
         if (w != -1 && h != -1)
         {
             dimensions = new ImageDimensions(w, h);
