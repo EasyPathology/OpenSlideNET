@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using EasyPathology.Abstractions.DataTypes;
 using EasyPathology.Abstractions.Extensions;
 using OpenSlideNET.Interop;
@@ -103,15 +104,61 @@ public static class SlideImage
     /// <exception cref="OpenSlideException">The file format is recognized, but an error occurred when opening the file.</exception>
     public static ISlideImage Open(string slidePath)
     {
-        if (slidePath == null)
+        ArgumentNullException.ThrowIfNull(slidePath);
+
+        var extension = Path.GetExtension(slidePath);
+        if (!string.IsNullOrWhiteSpace(extension))
         {
-            throw new ArgumentNullException(nameof(slidePath));
+            if (OpenSlideImage.SupportedExtensions.Contains(extension))
+            {
+                return OpenOpenSlideImage(slidePath);
+            }
+
+            if (DziSlideImage.SupportedExtensions.Contains(extension))
+            {
+                return OpenDziSlideImage(slidePath);
+            }
+
+            if (OpenCvSlideImage.SupportedExtensions.Contains(extension))
+            {
+                return OpenOpenCvSlideImage(slidePath);
+            }
         }
 
-        if (OpenSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
+        if (OpenSlideImage.DetectFormat(slidePath) != null)
+        {
+            return OpenOpenSlideImage(slidePath);
+        }
+
+        do
+        {
+            using var fs = File.OpenRead(slidePath);
+            if (fs.Length < 16) break;
+            var buffer = new byte[16];
+            if (fs.Read(buffer, 0, 16) != 16) break;
+
+            if (IsXml(Encoding.ASCII.GetString(buffer)) ||
+                IsXml(Encoding.UTF8.GetString(buffer)) ||
+                IsXml(Encoding.Unicode.GetString(buffer)))
+            {
+                return OpenDziSlideImage(slidePath);
+            }
+        }
+        while (false);
+
+        try
+        {
+            return OpenOpenCvSlideImage(slidePath);
+        }
+        catch
+        {
+            throw new OpenSlideUnsupportedFormatException();
+        }
+
+        static OpenSlideImage OpenOpenSlideImage(string path)
         {
             // Open file using OpenSlide
-            var handle = OpenSlideInterop.Open(slidePath);
+            var handle = OpenSlideInterop.Open(path);
             if (handle.IsInvalid)
             {
                 throw new OpenSlideUnsupportedFormatException();
@@ -123,22 +170,25 @@ public static class SlideImage
                 throw new OpenSlideException(errMsg);
             }
 
-            return new OpenSlideImage(slidePath, handle);
+            return new OpenSlideImage(path, handle);
         }
 
-        if (OpenCvSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
+        static DziSlideImage OpenDziSlideImage(string path)
         {
-            return new OpenCvSlideImage(slidePath);
+            return new DziSlideImage(path,
+                Path.Combine(Path.GetDirectoryName(path).NotNull(), "output_files"),
+                SlideHash.GetHash2(path));
         }
 
-        if (DziSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
+        static OpenCvSlideImage OpenOpenCvSlideImage(string path)
         {
-            return new DziSlideImage(slidePath,
-                Path.Combine(Path.GetDirectoryName(slidePath).NotNull(), "output_files"),
-                SlideHash.GetHash2(slidePath));
+            return new OpenCvSlideImage(path);
         }
 
-        throw new OpenSlideUnsupportedFormatException();
+        static bool IsXml(string text)
+        {
+            return text[0] == '<' && text.All(c => c >= 32 && c <= 126);
+        }
     }
 
     public static bool TryReadQuickHash(string slidePath, [NotNullWhen(true)] out string? quickHash, [NotNullWhen(false)] out Exception? exception)
@@ -181,7 +231,7 @@ public static class SlideImage
                 exception = null;
                 return true;
             }
-            
+
             quickHash = null;
             exception = new OpenSlideUnsupportedFormatException();
             return false;
