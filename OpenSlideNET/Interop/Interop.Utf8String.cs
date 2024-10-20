@@ -16,7 +16,11 @@ public static partial class OpenSlideInterop
         return Encoding.UTF8.GetString((byte*)nativeUtf8, len);
     }
 
+#if NET9_0_OR_GREATER
     private ref struct Utf8String : IDisposable
+#else
+    private ref struct Utf8String
+#endif
     {
         private GCHandle handle;
 
