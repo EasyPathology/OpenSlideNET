@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Serialization;
 using EasyPathology.Abstractions.DataTypes;
@@ -16,7 +15,7 @@ public class DziSlideImage : ISlideImage
     public static string[] SupportedExtensions => [".dzi"];
 
     protected readonly string tileBasePath;
-    protected readonly Image image;
+    protected readonly DziImage image;
 
     internal protected DziSlideImage(
         string dziPath,
@@ -29,9 +28,10 @@ public class DziSlideImage : ISlideImage
         {
             using var fs = File.OpenRead(dziPath);
             using var xml = XmlReader.Create(fs);
-            var serializer = new XmlSerializer(typeof(Image));
-            image = serializer.Deserialize(xml).NotNull<Image>();
-        } catch (Exception e)
+            var serializer = new XmlSerializer(typeof(DziImage));
+            image = serializer.Deserialize(xml).NotNull<DziImage>();
+        } 
+        catch (Exception e)
         {
             throw new FormatException(e.Message, e);
         }
@@ -162,32 +162,6 @@ public class DziSlideImage : ISlideImage
     {
         // dzi每层的tile大小都是一样的
         return new Size2I(image.TileSize, image.TileSize);
-    }
-
-    [XmlRoot(ElementName = "Image", Namespace = "http://schemas.microsoft.com/deepzoom/2008")]
-    public class Image
-    {
-        [XmlAttribute(AttributeName = "Format")]
-        public required string Format { get; set; }
-
-        [XmlAttribute(AttributeName = "Overlap")]
-        public int Overlap { get; set; }
-
-        [XmlAttribute(AttributeName = "TileSize")]
-        public required int TileSize { get; set; }
-
-        [XmlElement(ElementName = "Size")]
-        public required Size Size { get; set; }
-    }
-
-    [XmlRoot(ElementName = "Size")]
-    public class Size
-    {
-        [XmlAttribute(AttributeName = "Height")]
-        public required int Height { get; set; }
-
-        [XmlAttribute(AttributeName = "Width")]
-        public required int Width { get; set; }
     }
 
     public virtual void Dispose() { }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using EasyPathology.Abstractions.DataTypes;
 using EasyPathology.Abstractions.Extensions;
 using OpenSlideNET.Interop;
@@ -191,56 +192,46 @@ public static class SlideImage
         }
     }
 
-    public static bool TryReadQuickHash(string slidePath, [NotNullWhen(true)] out string? quickHash, [NotNullWhen(false)] out Exception? exception)
+    public static async ValueTask<(string quickHash, string quickHash2)> ReadQuickHashAsync(string slidePath)
     {
-        try
+        var extension = Path.GetExtension(slidePath).ToLower();
+
+        if (OpenSlideImage.SupportedExtensions.Contains(extension))
         {
-            if (OpenSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
+            using var handle = OpenSlideInterop.Open(slidePath);
+            if (handle.IsInvalid)
             {
-                using var handle = OpenSlideInterop.Open(slidePath);
-                if (handle.IsInvalid)
-                {
-                    quickHash = null;
-                    exception = new OpenSlideUnsupportedFormatException();
-                    return false;
-                }
-
-                if (!ThrowHelper.TryCheckError(handle, out var errMsg))
-                {
-                    quickHash = null;
-                    exception = new OpenSlideException(errMsg);
-                    return false;
-                }
-
-                quickHash = OpenSlideInterop.GetPropertyValue(handle, OpenSlideInterop.OpenSlidePropertyNameQuickHash1) ??
-                            SlideHash.GetHash(slidePath);
-                exception = null;
-                return true;
+                throw new OpenSlideUnsupportedFormatException("Invalid file format");
             }
 
-            if (OpenCvSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
+            if (!ThrowHelper.TryCheckError(handle, out var errMsg))
             {
-                quickHash = SlideHash.GetHash(slidePath);
-                exception = null;
-                return true;
+                throw new OpenSlideException(errMsg);
             }
 
-            if (DziSlideImage.SupportedExtensions.Contains(Path.GetExtension(slidePath)))
-            {
-                quickHash = SlideHash.GetHash(slidePath);
-                exception = null;
-                return true;
-            }
-
-            quickHash = null;
-            exception = new OpenSlideUnsupportedFormatException();
-            return false;
+            return (
+                OpenSlideInterop.GetPropertyValue(handle, OpenSlideInterop.OpenSlidePropertyNameQuickHash1) ??
+                await SlideHash.GetHashAsync(slidePath),
+                await SlideHash.GetHash2Async(slidePath)
+            );
         }
-        catch (Exception e)
+
+        if (OpenCvSlideImage.SupportedExtensions.Contains(extension))
         {
-            quickHash = null;
-            exception = e;
-            return false;
+            return (
+                await SlideHash.GetHashAsync(slidePath),
+                await SlideHash.GetHash2Async(slidePath)
+            );
         }
+
+        if (DziSlideImage.SupportedExtensions.Contains(extension))
+        {
+            return (
+                await SlideHash.GetHashAsync(slidePath),
+                await SlideHash.GetHash2Async(slidePath)
+            );
+        }
+
+        throw new OpenSlideUnsupportedFormatException();
     }
 }
