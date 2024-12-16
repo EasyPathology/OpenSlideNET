@@ -8,19 +8,16 @@
         <DebugType>embedded</DebugType>
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-        <OpenSlideVersion>v4</OpenSlideVersion>
-        <DefineConstants Condition="'$(OpenSlideVersion)' == 'v3'">OpenSlideV3</DefineConstants>
-        <DefineConstants Condition="'$(OpenSlideVersion)' == 'v4'">OpenSlideV4</DefineConstants>
 	</PropertyGroup>
 
     <ItemGroup Condition="'$(IsWindows)'=='true'">
-        <Content Include="../lib/$(OpenSlideVersion)/win-x64/*.*" LinkBase="runtimes/win-x64/native">
+        <Content Include="../lib/win-x64/*.*" LinkBase="runtimes/win-x64/native">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
 	<ItemGroup Condition="'$(IsLinux)'=='true'">
-        <Content Include="../lib/$(OpenSlideVersion)/linux-x64/*.*" LinkBase="runtimes/linux-x64/native">
+        <Content Include="../lib/linux-x64/*.*" LinkBase="runtimes/linux-x64/native">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
 	</ItemGroup>
