@@ -1,4 +1,5 @@
-﻿using OpenSlideNET.Interop;
+﻿using System.Diagnostics.CodeAnalysis;
+using OpenSlideNET.Interop;
 
 namespace OpenSlideNET
 {
@@ -6,7 +7,7 @@ namespace OpenSlideNET
     {
         internal static void CheckAndThrowError(OpenSlideImageSafeHandle osr)
         {
-            string message = OpenSlideInterop.GetError(osr);
+            var message = OpenSlideInterop.GetError(osr);
             if (message != null)
             {
                 ThrowOpenSlideException(message);
@@ -18,7 +19,7 @@ namespace OpenSlideNET
             throw new OpenSlideException(message);
         }
 
-        internal static bool TryCheckError(OpenSlideImageSafeHandle osr, out string message)
+        internal static bool TryCheckError(OpenSlideImageSafeHandle osr, [MaybeNullWhen(true)] out string message)
         {
             message = OpenSlideInterop.GetError(osr);
             return message == null;
