@@ -53,8 +53,7 @@ public sealed class OpenSlideImage : ISlideImage
             MicronsPerPixel = new Size2D(mppX ?? mppY ?? 0, mppY ?? mppX ?? 0);
         }
 
-        if (TryGetProperty("openslide.background-color", out var bgc) &&
-            Color4B.TryParse(bgc, out var color))
+        if (TryGetProperty(OpenSlideInterop.OpenSlidePropertyNameBackgroundColor, out var bgc) && Color4B.TryParse(bgc, out var color))
         {
             BackgroundColor = color;
         }
