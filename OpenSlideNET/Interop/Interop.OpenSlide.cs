@@ -9,7 +9,15 @@ namespace OpenSlideNET.Interop;
 /// </summary>
 public static partial class OpenSlideInterop
 {
-    private const string LibOpenSlide = "libopenslide-1";
+    private const string LibOpenSlide =
+            "libopenslide-" +
+#if OpenSlideV3
+            "0"
+#elif OpenSlideV4
+            "1"
+#endif
+        ;
+    
 
     static OpenSlideInterop()
     {

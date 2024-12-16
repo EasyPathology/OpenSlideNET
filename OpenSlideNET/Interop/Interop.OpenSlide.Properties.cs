@@ -31,8 +31,8 @@ public static partial class OpenSlideInterop
     }
 
 
-    [DllImport(LibOpenSlide, EntryPoint = "openslide_get_property_value", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-    private static extern string? GetPropertyValueInternal(OpenSlideImageSafeHandle osr, string name);
+    [DllImport(LibOpenSlide, EntryPoint = "openslide_get_property_value", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr GetPropertyValueInternal(OpenSlideImageSafeHandle osr, string name);
 
     /// <summary>
     /// Get the value of a single property. 
@@ -41,8 +41,6 @@ public static partial class OpenSlideInterop
     /// <param name="osr">The OpenSlide object. </param>
     /// <param name="name">The name of the desired property. Must be a valid name as given by openslide_get_property_names().</param>
     /// <returns>The value of the named property, or NULL if the property doesn't exist or an error occurred. </returns>
-    public static string? GetPropertyValue(OpenSlideImageSafeHandle osr, string name)
-    {
-        return GetPropertyValueInternal(osr, name);
-    }
+    public static string? GetPropertyValue(OpenSlideImageSafeHandle osr, string name) => 
+        StringFromNativeUtf8(GetPropertyValueInternal(osr, name));
 }

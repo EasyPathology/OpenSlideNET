@@ -28,7 +28,13 @@ public static partial class OpenSlideInterop
     }
 
     [DllImport(LibOpenSlide, EntryPoint = "openslide_open", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr OpenInternal(IntPtr filename);
+    private static extern IntPtr OpenInternal(
+#if OpenSlideV4
+        IntPtr
+#elif OpenSlideV3
+        string
+#endif
+            filename);
 
     /// <summary>
     ///     Open a whole slide image.
@@ -44,7 +50,11 @@ public static partial class OpenSlideInterop
     public static OpenSlideImageSafeHandle Open(string filename)
     {
         Debug.Assert(filename != null);
+        #if OpenSlideV3
+        var utf8Filename = filename;
+        #elif OpenSlideV4
         using var utf8Filename = new Utf8String(filename);
+        #endif
         return new OpenSlideImageSafeHandle(OpenInternal(utf8Filename));
     }
 
