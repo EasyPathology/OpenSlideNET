@@ -35,7 +35,7 @@
 	</ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\EasyPathology.Abstractions\src\EasyPathology.Abstractions.csproj" />
+      <ProjectReference Include="..\..\..\EasyPathology.Abstractions\EasyPathology.Abstractions\EasyPathology.Abstractions.csproj" />
     </ItemGroup>
 
     <PropertyGroup Condition="$(SolutionName) == 'EasyPathology'">
