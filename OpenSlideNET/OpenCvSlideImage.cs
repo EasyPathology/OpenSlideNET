@@ -52,16 +52,20 @@ public class OpenCvSlideImage : ISlideImage
 
     public void ReadRegion(int level, long x, long y, long width, long height, IntPtr buffer)
     {
-        var roi = new Rect((int)x, (int)y, (int)width, (int)height);
-        using var roiMat = new Mat(mat, roi);
-        var step = roiMat.Step();
-        for (var row = 0; row < roiMat.Rows; row++)
-        {
-            unsafe
-            {
-                Buffer.MemoryCopy(roiMat.DataPointer + row * step, (byte*)buffer + row * width * 4, width * 4, width * 4);
-            }
-        }
+        if (width <= 0 || height <= 0) return;
+
+        using var targetMat = Mat.FromPixelData((int)height, (int)width, MatType.CV_8UC4, buffer);
+        targetMat.SetTo(Scalar.Black);
+
+        var (actualX, actualY) = (Math.Clamp((int)x, 0, mat.Width), Math.Clamp((int)y, 0, mat.Height));
+        var (deltaX, deltaY) = (actualX - (int)x, actualY - (int)y);
+        var actualWidth = Math.Clamp((int)(width - deltaX), 0, mat.Width - actualX);
+        var actualHeight = Math.Clamp((int)(height - deltaY), 0, mat.Height - actualY);
+        if (actualWidth <= 0 || actualHeight <= 0) return;
+
+        using var sourceMat = new Mat(mat, new Rect(actualX, actualY, actualWidth, actualHeight));
+        using var targetRoi = new Mat(targetMat, new Rect(deltaX, deltaY, actualWidth, actualHeight));
+        sourceMat.CopyTo(targetRoi);
     }
 
     public void Dispose()
