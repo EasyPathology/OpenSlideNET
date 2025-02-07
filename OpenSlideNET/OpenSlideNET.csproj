@@ -10,6 +10,10 @@
         <Nullable>enable</Nullable>
 	</PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="OpenCvSharp4" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(IsWindows)'=='true'">
         <Content Include="../lib/win-x64/*.*" LinkBase="runtimes/win-x64/native">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -22,16 +26,12 @@
         </Content>
 	</ItemGroup>
 
-	<ItemGroup>
-        <PackageReference Include="OpenCvSharp4" Version="4.10.0.20240616" />
-    </ItemGroup>
-
     <ItemGroup Condition="'$(IsWindows)'=='true'">
-        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" />
+        <PackageReference Include="OpenCvSharp4.runtime.win" />
     </ItemGroup>
 	
 	<ItemGroup Condition="'$(IsLinux)'=='true'">
-		<PackageReference Include="OpenCvSharp4_.runtime.ubuntu.20.04-x64" Version="4.10.0.20240616" />
+		<PackageReference Include="OpenCvSharp4_.runtime.ubuntu.20.04-x64" />
 	</ItemGroup>
 
     <ItemGroup>
